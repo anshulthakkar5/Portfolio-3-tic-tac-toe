@@ -1,11 +1,7 @@
-
-
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.*;
 
 public class App {
 
@@ -19,383 +15,117 @@ public class App {
 
         while (playAgain) {
 
-            int gameType = promptGameType(scanner);
-
-            TicTacToeGame game =
-                    new TicTacToeGame(scanner, gameType);
-
+            TicTacToeGame game = new TicTacToeGame(scanner);
             game.play();
 
-            playAgain = promptPlayAgain(scanner);
+            System.out.print("Would you like to play again (yes/no)? ");
+            String response = scanner.nextLine().trim().toLowerCase();
+
+            playAgain = response.equals("yes");
         }
 
         System.out.println("Goodbye!");
     }
 
     public String getGreeting() {
-
         return "Welcome to Tic-Tac-Toe!";
     }
-
-    private static int promptGameType(Scanner scanner) {
-
-        while (true) {
-
-            System.out.println(
-                    "\nWhat kind of game would you like to play?\n");
-
-            System.out.println("1. Human vs. Human");
-            System.out.println("2. Human vs. Computer");
-            System.out.println("3. Computer vs. Human");
-
-            System.out.print("\nWhat is your selection? ");
-
-            String input = scanner.nextLine();
-
-            try {
-
-                int choice = Integer.parseInt(input);
-
-                if (choice >= 1 && choice <= 3) {
-
-                    return choice;
-                }
-
-            } catch (Exception e) {
-
-            }
-
-            System.out.println(
-                    "\nThat is not a valid selection!");
-        }
-    }
-
-    private static boolean promptPlayAgain(Scanner scanner) {
-
-        while (true) {
-
-            System.out.print(
-                    "\nWould you like to play again (yes/no)? ");
-
-            String input =
-                    scanner.nextLine().trim().toLowerCase();
-
-            if (input.equals("yes")) {
-
-                return true;
-            }
-
-            if (input.equals("no")) {
-
-                return false;
-            }
-
-            System.out.println(
-                    "That is not a valid entry!");
-        }
-    }
 }
-
-
-/* ======================================================
-                    GAME CLASS
-====================================================== */
 
 class TicTacToeGame {
 
     private final Scanner scanner;
     private final Board board;
-
     private char currentPlayer;
 
-    private final boolean computerX;
-    private final boolean computerO;
-
-    private final Random random;
-
-    TicTacToeGame(Scanner scanner, int gameType) {
-
+    TicTacToeGame(Scanner scanner) {
         this.scanner = scanner;
-
         this.board = new Board();
-
         this.currentPlayer = 'X';
-
-        this.random = new Random();
-
-        computerX = (gameType == 3);
-
-        computerO = (gameType == 2);
-
-        if (computerX) {
-
-            System.out.println(
-                    "\nGreat! The computer will go first.");
-        }
-
-        if (computerO) {
-
-            System.out.println(
-                    "\nGreat! You will go first.");
-        }
     }
 
     void play() {
 
-        System.out.println();
-
-        board.print();
-
         while (true) {
-
-            if (isComputerTurn()) {
-
-                int move = computerMove();
-
-                board.place(move, currentPlayer);
-
-                System.out.println(
-                        "\nComputer chooses " + move);
-
-            } else {
-
-                Integer move = promptMove();
-
-                if (move == null ||
-                        !board.place(move, currentPlayer)) {
-
-                    System.out.println(
-                            "\nThat is not a valid move! Try again.");
-
-                    continue;
-                }
-            }
-
-            System.out.println();
 
             board.print();
 
+            System.out.print("Player " + currentPlayer + ", enter your move (1-9): ");
+
+            String input = scanner.nextLine();
+
+            int move;
+
+            try {
+                move = Integer.parseInt(input);
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid input! Try again.");
+                continue;
+            }
+
+            if (!board.place(move, currentPlayer)) {
+                System.out.println("Invalid move! Try again.");
+                continue;
+            }
+
             if (board.isWinner(currentPlayer)) {
-
-                System.out.println(
-                        "\nPlayer " + currentPlayer + " wins!");
-
+                board.print();
+                System.out.println("Player " + currentPlayer + " wins!");
                 return;
             }
 
             if (board.isDraw()) {
-
-                System.out.println("\nIt's a draw!");
-
+                board.print();
+                System.out.println("It's a draw!");
                 return;
             }
 
-            currentPlayer =
-                    (currentPlayer == 'X') ? 'O' : 'X';
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
         }
-    }
-
-    private boolean isComputerTurn() {
-
-        return (currentPlayer == 'X' && computerX)
-                || (currentPlayer == 'O' && computerO);
-    }
-
-    private Integer promptMove() {
-
-        System.out.print("\nWhat is your move? ");
-
-        String input = scanner.nextLine();
-
-        try {
-
-            int move = Integer.parseInt(input);
-
-            if (move >= 1 && move <= 9) {
-
-                return move;
-            }
-
-        } catch (Exception e) {
-
-        }
-
-        return null;
-    }
-
-
-    /* ======================================================
-                        COMPUTER AI
-    ====================================================== */
-
-    private int computerMove() {
-
-        char computer = currentPlayer;
-
-        char opponent =
-                (computer == 'X') ? 'O' : 'X';
-
-        // First move -> corner
-
-        if (board.totalMoves() == 0) {
-
-            int[] corners = {1, 3, 7, 9};
-
-            return corners[random.nextInt(4)];
-        }
-
-        // Second move -> center
-
-        if (board.totalMoves() == 1 &&
-                board.isEmpty(5)) {
-
-            return 5;
-        }
-
-        // Winning move
-
-        Integer winMove =
-                findWinningMove(computer);
-
-        if (winMove != null) {
-
-            return winMove;
-        }
-
-        // Block opponent
-
-        Integer blockMove =
-                findWinningMove(opponent);
-
-        if (blockMove != null) {
-
-            return blockMove;
-        }
-
-        // Random move
-
-        List<Integer> moves =
-                board.availableMoves();
-
-        return moves.get(
-                random.nextInt(moves.size()));
-    }
-
-    private Integer findWinningMove(char player) {
-
-        for (int move : board.availableMoves()) {
-
-            board.place(move, player);
-
-            boolean win =
-                    board.isWinner(player);
-
-            board.remove(move);
-
-            if (win) {
-
-                return move;
-            }
-        }
-
-        return null;
     }
 }
-
-
-/* ======================================================
-                    BOARD CLASS
-====================================================== */
 
 class Board {
 
     private final char[] cells;
 
     Board() {
-
         cells = new char[9];
     }
 
     boolean place(int position, char player) {
 
         if (position < 1 || position > 9) {
-
             return false;
         }
 
-        int index = position - 1;
-
-        if (cells[index] != '\0') {
-
+        if (cells[position - 1] != '\0') {
             return false;
         }
 
-        cells[index] = player;
-
+        cells[position - 1] = player;
         return true;
-    }
-
-    void remove(int position) {
-
-        cells[position - 1] = '\0';
-    }
-
-    boolean isEmpty(int position) {
-
-        return cells[position - 1] == '\0';
-    }
-
-    int totalMoves() {
-
-        int count = 0;
-
-        for (char c : cells) {
-
-            if (c != '\0') {
-
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    List<Integer> availableMoves() {
-
-        List<Integer> moves = new ArrayList<>();
-
-        for (int i = 0; i < 9; i++) {
-
-            if (cells[i] == '\0') {
-
-                moves.add(i + 1);
-            }
-        }
-
-        return moves;
     }
 
     boolean isWinner(char player) {
 
-        int[][] lines = {
-
+        int[][] wins = {
                 {0,1,2},
                 {3,4,5},
                 {6,7,8},
-
                 {0,3,6},
                 {1,4,7},
                 {2,5,8},
-
                 {0,4,8},
                 {2,4,6}
         };
 
-        for (int[] line : lines) {
+        for (int[] combo : wins) {
 
-            if (cells[line[0]] == player &&
-                cells[line[1]] == player &&
-                cells[line[2]] == player) {
+            if (cells[combo[0]] == player &&
+                cells[combo[1]] == player &&
+                cells[combo[2]] == player) {
 
                 return true;
             }
@@ -407,9 +137,7 @@ class Board {
     boolean isDraw() {
 
         for (char c : cells) {
-
             if (c == '\0') {
-
                 return false;
             }
         }
@@ -419,36 +147,295 @@ class Board {
 
     void print() {
 
-        System.out.println(formatRow(0));
+        for (int i = 0; i < 9; i++) {
 
-        System.out.println(
-                "  -----+-----+-----");
+            if (cells[i] == '\0') {
+                System.out.print(i + 1);
+            }
+            else {
+                System.out.print(cells[i]);
+            }
 
-        System.out.println(formatRow(3));
-
-        System.out.println(
-                "  -----+-----+-----");
-
-        System.out.println(formatRow(6));
-    }
-
-    private String formatRow(int start) {
-
-        return "    " +
-                display(start) +
-                "  |  " +
-                display(start + 1) +
-                "  |  " +
-                display(start + 2);
-    }
-
-    private String display(int index) {
-
-        if (cells[index] == '\0') {
-
-            return String.valueOf(index + 1);
+            if ((i + 1) % 3 == 0) {
+                System.out.println();
+            }
+            else {
+                System.out.print(" | ");
+            }
         }
 
-        return String.valueOf(cells[index]);
+        System.out.println();
+    }
+}
+
+// STREAM API ADD-ONS
+
+class StreamUtilities {
+
+    public static int[] evensOnly(int[] numbers) {
+        return Arrays.stream(numbers)
+                .filter(n -> n % 2 == 0)
+                .toArray();
+    }
+
+    public static int[] oddsOnly(int[] numbers) {
+        return Arrays.stream(numbers)
+                .filter(n -> n % 2 != 0)
+                .toArray();
+    }
+
+    public static int[] addFive(int[] numbers) {
+        return Arrays.stream(numbers)
+                .map(n -> n + 5)
+                .toArray();
+    }
+
+    public static int[] squareNumbers(int[] numbers) {
+        return Arrays.stream(numbers)
+                .map(n -> n * n)
+                .toArray();
+    }
+}
+
+// GENERIC LINKED LIST
+
+class Node<T> {
+
+    private T data;
+    private Node<T> next;
+
+    public Node(T data) {
+        this.data = data;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public Node<T> getNext() {
+        return next;
+    }
+
+    public void setNext(Node<T> next) {
+        this.next = next;
+    }
+}
+
+class SinglyLinkedList<T> {
+
+    private Node<T> head;
+
+    public void add(T data) {
+
+        Node<T> newNode = new Node<>(data);
+
+        if (head == null) {
+            head = newNode;
+            return;
+        }
+
+        Node<T> current = head;
+
+        while (current.getNext() != null) {
+            current = current.getNext();
+        }
+
+        current.setNext(newNode);
+    }
+
+    public boolean contains(T data) {
+
+        Node<T> current = head;
+
+        while (current != null) {
+
+            if (current.getData().equals(data)) {
+                return true;
+            }
+
+            current = current.getNext();
+        }
+
+        return false;
+    }
+}
+
+// GENERIC BINARY TREE
+
+class TreeNode<T> {
+
+    T data;
+    TreeNode<T> left;
+    TreeNode<T> right;
+
+    TreeNode(T data) {
+        this.data = data;
+    }
+}
+
+class BinaryTree<T extends Comparable<T>> {
+
+    private TreeNode<T> root;
+
+    public void insert(T data) {
+        root = insertRecursive(root, data);
+    }
+
+    private TreeNode<T> insertRecursive(TreeNode<T> current, T data) {
+
+        if (current == null) {
+            return new TreeNode<>(data);
+        }
+
+        if (data.compareTo(current.data) < 0) {
+            current.left = insertRecursive(current.left, data);
+        }
+        else if (data.compareTo(current.data) > 0) {
+            current.right = insertRecursive(current.right, data);
+        }
+
+        return current;
+    }
+
+    public boolean contains(T data) {
+        return containsRecursive(root, data);
+    }
+
+    private boolean containsRecursive(TreeNode<T> current, T data) {
+
+        if (current == null) {
+            return false;
+        }
+
+        if (current.data.equals(data)) {
+            return true;
+        }
+
+        if (data.compareTo(current.data) < 0) {
+            return containsRecursive(current.left, data);
+        }
+
+        return containsRecursive(current.right, data);
+    }
+}
+```
+
+# AppTest.java
+
+```java
+package org.example;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AppTest {
+
+    @Test
+    void appHasAGreeting() {
+
+        App app = new App();
+
+        assertNotNull(app.getGreeting());
+        assertEquals("Welcome to Tic-Tac-Toe!", app.getGreeting());
+    }
+
+    @Test
+    void testPlaceMove() {
+
+        Board board = new Board();
+
+        assertTrue(board.place(1, 'X'));
+        assertFalse(board.place(1, 'O'));
+    }
+
+    @Test
+    void testWinnerRow() {
+
+        Board board = new Board();
+
+        board.place(1, 'X');
+        board.place(2, 'X');
+        board.place(3, 'X');
+
+        assertTrue(board.isWinner('X'));
+    }
+
+    @Test
+    void testDraw() {
+
+        Board board = new Board();
+
+        char[] moves = {'X','O','X','X','O','O','O','X','X'};
+
+        for (int i = 0; i < 9; i++) {
+            board.place(i + 1, moves[i]);
+        }
+
+        assertTrue(board.isDraw());
+    }
+
+    @Test
+    void testEvensOnly() {
+
+        int[] input = {1,2,3,4,5,6};
+        int[] expected = {2,4,6};
+
+        assertArrayEquals(expected, StreamUtilities.evensOnly(input));
+    }
+
+    @Test
+    void testOddsOnly() {
+
+        int[] input = {1,2,3,4,5,6};
+        int[] expected = {1,3,5};
+
+        assertArrayEquals(expected, StreamUtilities.oddsOnly(input));
+    }
+
+    @Test
+    void testAddFive() {
+
+        int[] input = {1,2,3};
+        int[] expected = {6,7,8};
+
+        assertArrayEquals(expected, StreamUtilities.addFive(input));
+    }
+
+    @Test
+    void testSquareNumbers() {
+
+        int[] input = {1,2,3,4};
+        int[] expected = {1,4,9,16};
+
+        assertArrayEquals(expected, StreamUtilities.squareNumbers(input));
+    }
+
+    @Test
+    void testLinkedList() {
+
+        SinglyLinkedList<String> list = new SinglyLinkedList<>();
+
+        list.add("A");
+        list.add("B");
+
+        assertTrue(list.contains("A"));
+        assertTrue(list.contains("B"));
+        assertFalse(list.contains("C"));
+    }
+
+    @Test
+    void testBinaryTree() {
+
+        BinaryTree<Integer> tree = new BinaryTree<>();
+
+        tree.insert(10);
+        tree.insert(5);
+        tree.insert(15);
+
+        assertTrue(tree.contains(10));
+        assertTrue(tree.contains(5));
+        assertTrue(tree.contains(15));
+        assertFalse(tree.contains(20));
     }
 }
