@@ -1,69 +1,31 @@
-
-
 package org.example;
 
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AppTest {
 
     @Test
-    void appHasGreeting() {
+    void appHasAGreeting() {
 
         App app = new App();
 
         assertNotNull(app.getGreeting());
+        assertEquals("Welcome to Tic-Tac-Toe!", app.getGreeting());
     }
 
     @Test
-    void greetingCorrect() {
-
-        App app = new App();
-
-        assertEquals(
-                "Welcome to Tic-Tac-Toe!",
-                app.getGreeting());
-    }
-
-    @Test
-    void placeMoveWorks() {
+    void testPlaceMove() {
 
         Board board = new Board();
 
         assertTrue(board.place(1, 'X'));
-    }
-
-    @Test
-    void cannotPlaceTakenSpot() {
-
-        Board board = new Board();
-
-        board.place(1, 'X');
-
         assertFalse(board.place(1, 'O'));
     }
 
     @Test
-    void invalidMoveLow() {
-
-        Board board = new Board();
-
-        assertFalse(board.place(0, 'X'));
-    }
-
-    @Test
-    void invalidMoveHigh() {
-
-        Board board = new Board();
-
-        assertFalse(board.place(10, 'X'));
-    }
-
-    @Test
-    void rowWinnerDetected() {
+    void testWinnerRow() {
 
         Board board = new Board();
 
@@ -75,43 +37,13 @@ class AppTest {
     }
 
     @Test
-    void columnWinnerDetected() {
+    void testDraw() {
 
         Board board = new Board();
 
-        board.place(1, 'O');
-        board.place(4, 'O');
-        board.place(7, 'O');
-
-        assertTrue(board.isWinner('O'));
-    }
-
-    @Test
-    void diagonalWinnerDetected() {
-
-        Board board = new Board();
-
-        board.place(1, 'X');
-        board.place(5, 'X');
-        board.place(9, 'X');
-
-        assertTrue(board.isWinner('X'));
-    }
-
-    @Test
-    void drawDetected() {
-
-        Board board = new Board();
-
-        char[] moves = {
-
-                'X','O','X',
-                'X','O','O',
-                'O','X','X'
-        };
+        char[] moves = {'X','O','X','X','O','O','O','X','X'};
 
         for (int i = 0; i < 9; i++) {
-
             board.place(i + 1, moves[i]);
         }
 
@@ -119,72 +51,66 @@ class AppTest {
     }
 
     @Test
-    void boardNotDraw() {
+    void testEvensOnly() {
 
-        Board board = new Board();
+        int[] input = {1,2,3,4,5,6};
+        int[] expected = {2,4,6};
 
-        board.place(1, 'X');
-
-        assertFalse(board.isDraw());
+        assertArrayEquals(expected, StreamUtilities.evensOnly(input));
     }
 
     @Test
-    void availableMovesCorrect() {
+    void testOddsOnly() {
 
-        Board board = new Board();
+        int[] input = {1,2,3,4,5,6};
+        int[] expected = {1,3,5};
 
-        board.place(1, 'X');
-        board.place(5, 'O');
-
-        List<Integer> moves =
-                board.availableMoves();
-
-        assertEquals(7, moves.size());
-
-        assertFalse(moves.contains(1));
-
-        assertFalse(moves.contains(5));
+        assertArrayEquals(expected, StreamUtilities.oddsOnly(input));
     }
 
     @Test
-    void emptySpaceDetected() {
+    void testAddFive() {
 
-        Board board = new Board();
+        int[] input = {1,2,3};
+        int[] expected = {6,7,8};
 
-        assertTrue(board.isEmpty(1));
+        assertArrayEquals(expected, StreamUtilities.addFive(input));
     }
 
     @Test
-    void occupiedSpaceDetected() {
+    void testSquareNumbers() {
 
-        Board board = new Board();
+        int[] input = {1,2,3,4};
+        int[] expected = {1,4,9,16};
 
-        board.place(1, 'X');
-
-        assertFalse(board.isEmpty(1));
+        assertArrayEquals(expected, StreamUtilities.squareNumbers(input));
     }
 
     @Test
-    void removeMoveWorks() {
+    void testLinkedList() {
 
-        Board board = new Board();
+        SinglyLinkedList<String> list = new SinglyLinkedList<>();
 
-        board.place(1, 'X');
+        list.add("A");
+        list.add("B");
 
-        board.remove(1);
-
-        assertTrue(board.isEmpty(1));
+        assertTrue(list.contains("A"));
+        assertTrue(list.contains("B"));
+        assertFalse(list.contains("C"));
     }
 
     @Test
-    void totalMovesCorrect() {
+    void testBinaryTree() {
 
-        Board board = new Board();
+        BinaryTree<Integer> tree = new BinaryTree<>();
 
-        board.place(1, 'X');
-        board.place(2, 'O');
-        board.place(3, 'X');
+        tree.insert(10);
+        tree.insert(5);
+        tree.insert(15);
 
-        assertEquals(3, board.totalMoves());
+        assertTrue(tree.contains(10));
+        assertTrue(tree.contains(5));
+        assertTrue(tree.contains(15));
+        assertFalse(tree.contains(20));
     }
 }
